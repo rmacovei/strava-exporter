@@ -1,6 +1,8 @@
 from flask import Flask, request, redirect, session, url_for, jsonify
 import requests
 import os
+import csv
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -46,24 +48,30 @@ def club_members():
     # Fetch public club activities
     activities_response = requests.get(
         f'https://www.strava.com/api/v3/clubs/{club_id}/activities',
-        headers={'Authorization': f'Bearer {access_token}'}
+        headers={'Authorization': f'Bearer {access_token}'},
+        params={
+            'before': datetime(2024, 6, 24),
+            'after': datetime(2024, 8, 20)
+        }
     ).json()
 
     activities_data = []
+    allowed_activity_types = ['Hike', 'Run', 'Ride']
 
     # Extract relevant data from each activity
     for activity in activities_response:
-        activity_data = {
-            'athlete_name': activity.get('athlete', {}).get('firstname', '') + ' ' + activity.get('athlete', {}).get('lastname', ''),
-            'activity_name': activity.get('name'),
-            'distance': activity.get('distance'),  # Distance in meters
-            'moving_time': activity.get('moving_time'),  # Time in seconds
-            'elapsed_time': activity.get('elapsed_time'),  # Elapsed time in seconds
-            'total_elevation_gain': activity.get('total_elevation_gain'),  # Elevation in meters
-            'type': activity.get('type'),  # Type of activity (e.g., Run, Ride)
-            'average_speed': activity.get('average_speed')  # Average speed in m/s
-        }
-        activities_data.append(activity_data)
+        activity_type = activity.get('type')
+        if activity_type in allowed_activity_types:  # Only include Hike, Run, Ride
+            activity_data = {
+                'athlete_name': activity.get('athlete', {}).get('firstname', '') + ' ' + activity.get('athlete', {}).get('lastname', ''),
+                'activity_name': activity.get('name'),
+                'distance': activity.get('distance'),  # Distance in meters
+                'moving_time': activity.get('moving_time'),  # Time in seconds
+                'elapsed_time': activity.get('elapsed_time'),  # Elapsed time in seconds
+                'type': activity.get('type'),  # Type of activity (e.g., Run, Ride)
+                'average_speed': activity.get('average_speed')  # Average speed in m/s
+            }
+            activities_data.append(activity_data)
 
     return jsonify(activities_data)
 
