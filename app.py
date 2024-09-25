@@ -48,13 +48,12 @@ def club_members():
     # Fetch public club activities
     activities_response = requests.get(
         f'https://www.strava.com/api/v3/clubs/{club_id}/activities',
-        headers={'Authorization': f'Bearer {access_token}'},
-        params={
-            'before': datetime(2024, 6, 24),
-            'after': datetime(2024, 8, 20)
-        }
+        headers={'Authorization': f'Bearer {access_token}'}
     ).json()
-
+        # params={
+        #     'after': datetime(2024, 6, 24),
+        #     'before': datetime(2024, 8, 20)
+        # }
     activities_data = []
     allowed_activity_types = ['Hike', 'Run', 'Ride']
     print("HERE:---->")
