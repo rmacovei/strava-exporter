@@ -30,7 +30,7 @@ def callback():
             'grant_type': 'authorization_code'
         }
     ).json()
-
+    print("HERE:" + token_response)
     session['access_token'] = token_response['access_token']
     return redirect(url_for('club_members'))
 
