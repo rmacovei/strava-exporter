@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, session, url_for, jsonify
+from flask import Flask, request, redirect, session, url_for, send_file
 import requests
 import os
 import csv
@@ -81,7 +81,7 @@ def club_members():
     # Define the CSV file path (write to /tmp/ for Lambda)
     csv_file = '/tmp/strava_activity_data.csv'
 
-    # Write the data to a CSV file
+   # Write the data to a CSV file
     with open(csv_file, 'w', newline='') as file:
         fieldnames = ['Activity Name', 'Distance (kilometers)', 'Activity Time', 'Activity Date', 'Activity Type']
         writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -95,8 +95,8 @@ def club_members():
             data['Distance (kilometers)'] = data['Distance (kilometers)'].replace(' meter', '')
             writer.writerow(data)
 
-    # Return the path to the generated CSV file
-    return '<a>Data extracted successfully!</a>'
+    # Return the CSV file to download
+    return send_file(csv_file, as_attachment=True, attachment_filename='strava_activity_data.csv')
 
 
 if __name__ == '__main__':
