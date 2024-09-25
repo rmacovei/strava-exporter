@@ -58,8 +58,8 @@ def club_members():
 
     # Fetch activities within the date range
     activities = client.get_activities(after=start_date, before=end_date)
-    print("HERE:---->")
-    print(activities)
+
+    allowed_activity_types = ['Hike', 'Run', 'Ride']
     
     for activity in activities:
         # Use get_activity to fetch additional details, including distance and time
@@ -76,7 +76,8 @@ def club_members():
             'Activity Type': detailed_activity.type
         }
 
-        activity_data.append(activity_info)
+        if detailed_activity.type in allowed_activity_types:
+            activity_data.append(activity_info)
 
     # Define the CSV file path (write to /tmp/ for Lambda)
     csv_file = '/tmp/strava_activity_data.csv'
