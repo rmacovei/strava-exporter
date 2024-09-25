@@ -16,7 +16,7 @@ def home():
 
 @app.route('/authorize')
 def authorize():
-    return redirect(f'https://www.strava.com/oauth/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope=read,read_all,profile:read_all')
+    return redirect(f'https://www.strava.com/oauth/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope=read,read_all,profile:read_all,activity:read_all')
 
 @app.route('/callback')
 def callback():
@@ -42,12 +42,47 @@ def club_members():
         return redirect(url_for('home'))
 
     club_id = '1049135'  # Replace with your Strava club ID
-    response = requests.get(
+
+    # Step 1: Fetch club members
+    members_response = requests.get(
         f'https://www.strava.com/api/v3/clubs/{club_id}/members',
         headers={'Authorization': f'Bearer {access_token}'}
     ).json()
 
-    return jsonify(response)
+    members_data = []
+
+    members_data = []
+
+    # Step 2: Fetch activities for each member
+    for member in members_response:
+        athlete_id = member['id']
+        member_name = member['firstname'] + " " + member['lastname']
+
+        activities_response = requests.get(
+            f'https://www.strava.com/api/v3/athletes/{athlete_id}/activities',
+            headers={'Authorization': f'Bearer {access_token}'}
+        ).json()
+
+        # Step 3: Extract specific metrics for each member
+        activities_data = []
+        for activity in activities_response:
+            activity_data = {
+                'name': activity.get('name'),
+                'distance': activity.get('distance'),  # Distance in meters
+                'moving_time': activity.get('moving_time'),  # Time in seconds
+                'elapsed_time': activity.get('elapsed_time'),  # Elapsed time in seconds
+                'total_elevation_gain': activity.get('total_elevation_gain'),  # Elevation in meters
+                'type': activity.get('type'),  # Type of activity (e.g., Run, Ride)
+                'average_speed': activity.get('average_speed')  # Average speed in m/s
+            }
+            activities_data.append(activity_data)
+
+        members_data.append({
+            'member_name': member_name,
+            'activities': activities_data
+        })
+
+    return jsonify(members_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
