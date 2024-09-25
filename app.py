@@ -3,6 +3,8 @@ import requests
 import os
 import csv
 from datetime import datetime, timedelta
+import stravalib
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -43,37 +45,59 @@ def club_members():
     if not access_token:
         return redirect(url_for('home'))
 
-    club_id = '1049135'  # Replace with your Strava club ID
+    # Initialize Strava client
+    client = stravalib.Client()
+    client.access_token = access_token
 
-    # Fetch public club activities
-    activities_response = requests.get(
-        f'https://www.strava.com/api/v3/clubs/{club_id}/activities',
-        headers={'Authorization': f'Bearer {access_token}'},
-        params={
-            'after': datetime(2024, 6, 24)
-            # 'before': datetime(2024, 8, 20)
+# Define the date range
+    start_date = datetime(2024, 6, 24)
+    end_date = datetime(2024, 8, 20)
+
+    # Initialize a list to store activity data
+    activity_data = []
+
+    # Fetch activities within the date range
+    activities = client.get_activities(after=start_date, before=end_date)
+
+    for activity in activities:
+        # Use get_activity to fetch additional details, including distance and time
+        detailed_activity = client.get_activity(activity.id)
+
+        # Convert distance from meters to kilometers, round to one decimal place, and format as a string
+        distance_km = '{:.1f}'.format(detailed_activity.distance / 1000.0)
+
+        activity_info = {
+            'Activity Name': detailed_activity.name,
+            'Distance (kilometers)': distance_km,
+            'Activity Time': str(timedelta(seconds=int(detailed_activity.elapsed_time.total_seconds()))),
+            'Activity Date': detailed_activity.start_date.strftime('%Y-%m-%d'),
+            'Activity Type': detailed_activity.type
         }
-    ).json()
-    activities_data = []
-    allowed_activity_types = ['Hike', 'Run', 'Ride']
-    print("HERE:---->")
-    print(activities_response)    
-    # Extract relevant data from each activity
-    for activity in activities_response:       
-        activity_type = activity.get('type')
-        if activity_type in allowed_activity_types:  # Only include Hike, Run, Ride
-            activity_data = {
-                'athlete_name': activity.get('athlete', {}).get('firstname', '') + ' ' + activity.get('athlete', {}).get('lastname', ''),
-                'activity_name': activity.get('name'),
-                'distance': activity.get('distance'),  # Distance in meters
-                'moving_time': activity.get('moving_time'),  # Time in seconds
-                'elapsed_time': activity.get('elapsed_time'),  # Elapsed time in seconds
-                'type': activity.get('type'),  # Type of activity (e.g., Run, Ride)
-                'average_speed': activity.get('average_speed')  # Average speed in m/s
-            }
-            activities_data.append(activity_data)
 
-    return jsonify(activities_data)
+        activity_data.append(activity_info)
+
+    # Define the CSV file path (write to /tmp/ for Lambda)
+    csv_file = '/tmp/strava_activity_data.csv'
+
+    # Write the data to a CSV file
+    with open(csv_file, 'w', newline='') as file:
+        fieldnames = ['Activity Name', 'Distance (kilometers)', 'Activity Time', 'Activity Date', 'Activity Type']
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+        # Write the header row
+        writer.writeheader()
+
+        # Write the activity data rows
+        for data in activity_data:
+            # Remove "meter" from distance field
+            data['Distance (kilometers)'] = data['Distance (kilometers)'].replace(' meter', '')
+            writer.writerow(data)
+
+    # Return the path to the generated CSV file
+    return {
+        'statusCode': 200,
+        'body': json.dumps({'message': 'Data processed successfully'})
+    }
 
 if __name__ == '__main__':
     app.run(debug=True)
