@@ -57,9 +57,12 @@ def club_members():
 
     activities_data = []
     allowed_activity_types = ['Hike', 'Run', 'Ride']
-
+    print("HERE:---->")
+    print(activities_response)    
     # Extract relevant data from each activity
     for activity in activities_response:
+        print("HERE:---->")
+        print(activity)        
         activity_type = activity.get('type')
         if activity_type in allowed_activity_types:  # Only include Hike, Run, Ride
             activity_data = {
