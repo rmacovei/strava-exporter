@@ -7,7 +7,7 @@ app.secret_key = os.urandom(24)
 
 # Replace with your actual client_id, client_secret, and your app's redirect URI
 CLIENT_ID = '113919'
-CLIENT_SECRET = 'y3165002abb39098508df8f15ee15ceb7d608ae6a'
+CLIENT_SECRET = '3165002abb39098508df8f15ee15ceb7d608ae6a'
 REDIRECT_URI = 'https://public-dale-strava-exporter-05c62d35.koyeb.app/callback'
 
 @app.route('/')
