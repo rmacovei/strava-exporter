@@ -94,10 +94,8 @@ def club_members():
             writer.writerow(data)
 
     # Return the path to the generated CSV file
-    return {
-        'statusCode': 200,
-        'body': json.dumps({'message': 'Data processed successfully'})
-    }
+    return '<a>Data extracted successfully!</a>'
+
 
 if __name__ == '__main__':
     app.run(debug=True)
