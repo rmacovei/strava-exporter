@@ -43,49 +43,29 @@ def club_members():
 
     club_id = '1049135'  # Replace with your Strava club ID
 
-    # Step 1: Fetch club members
-    members_response = requests.get(
-        f'https://www.strava.com/api/v3/clubs/{club_id}/members',
+    # Fetch public club activities
+    activities_response = requests.get(
+        f'https://www.strava.com/api/v3/clubs/{club_id}/activities',
         headers={'Authorization': f'Bearer {access_token}'}
     ).json()
-    
-    print("HERE:---->")
-    print(members_response)
 
-    members_data = []
+    activities_data = []
 
-    # Step 2: Fetch activities for each member
-    for member in members_response:
-        athlete_id = member['id']
-        member_name = member['firstname'] + " " + member['lastname']
+    # Extract relevant data from each activity
+    for activity in activities_response:
+        activity_data = {
+            'athlete_name': activity.get('athlete', {}).get('firstname', '') + ' ' + activity.get('athlete', {}).get('lastname', ''),
+            'activity_name': activity.get('name'),
+            'distance': activity.get('distance'),  # Distance in meters
+            'moving_time': activity.get('moving_time'),  # Time in seconds
+            'elapsed_time': activity.get('elapsed_time'),  # Elapsed time in seconds
+            'total_elevation_gain': activity.get('total_elevation_gain'),  # Elevation in meters
+            'type': activity.get('type'),  # Type of activity (e.g., Run, Ride)
+            'average_speed': activity.get('average_speed')  # Average speed in m/s
+        }
+        activities_data.append(activity_data)
 
-        activities_response = requests.get(
-            f'https://www.strava.com/api/v3/athletes/{athlete_id}/activities',
-            headers={'Authorization': f'Bearer {access_token}'}
-        ).json()
-
-        print("HERE:---->")
-        print(activities_response)
-        # Step 3: Extract specific metrics for each member
-        activities_data = []
-        for activity in activities_response:
-            activity_data = {
-                'name': activity.get('name'),
-                'distance': activity.get('distance'),  # Distance in meters
-                'moving_time': activity.get('moving_time'),  # Time in seconds
-                'elapsed_time': activity.get('elapsed_time'),  # Elapsed time in seconds
-                'total_elevation_gain': activity.get('total_elevation_gain'),  # Elevation in meters
-                'type': activity.get('type'),  # Type of activity (e.g., Run, Ride)
-                'average_speed': activity.get('average_speed')  # Average speed in m/s
-            }
-            activities_data.append(activity_data)
-
-        members_data.append({
-            'member_name': member_name,
-            'activities': activities_data
-        })
-
-    return jsonify(members_data)
+    return jsonify(activities_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
