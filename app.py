@@ -1,6 +1,3 @@
-from flask import Flask
-
-
 from flask import Flask, request, redirect, session, url_for, jsonify
 import requests
 import os
