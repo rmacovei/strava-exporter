@@ -48,8 +48,9 @@ def club_members():
         f'https://www.strava.com/api/v3/clubs/{club_id}/members',
         headers={'Authorization': f'Bearer {access_token}'}
     ).json()
-
-    members_data = []
+    
+    print("HERE:---->")
+    print(members_response)
 
     members_data = []
 
@@ -63,6 +64,8 @@ def club_members():
             headers={'Authorization': f'Bearer {access_token}'}
         ).json()
 
+        print("HERE:---->")
+        print(activities_response)
         # Step 3: Extract specific metrics for each member
         activities_data = []
         for activity in activities_response:
