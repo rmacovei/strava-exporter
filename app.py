@@ -96,7 +96,7 @@ def club_members():
             writer.writerow(data)
 
     # Return the CSV file to download
-    return send_file(csv_file, as_attachment=True, attachment_filename='strava_activity_data.csv')
+    return send_file(csv_file, as_attachment=True, download_name='strava_activity_data.csv')
 
 
 if __name__ == '__main__':
