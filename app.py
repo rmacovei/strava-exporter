@@ -48,20 +48,18 @@ def club_members():
     # Fetch public club activities
     activities_response = requests.get(
         f'https://www.strava.com/api/v3/clubs/{club_id}/activities',
-        headers={'Authorization': f'Bearer {access_token}'}
+        headers={'Authorization': f'Bearer {access_token}'},
+        params={
+            'after': datetime(2024, 6, 24)
+            # 'before': datetime(2024, 8, 20)
+        }
     ).json()
-        # params={
-        #     'after': datetime(2024, 6, 24),
-        #     'before': datetime(2024, 8, 20)
-        # }
     activities_data = []
     allowed_activity_types = ['Hike', 'Run', 'Ride']
     print("HERE:---->")
     print(activities_response)    
     # Extract relevant data from each activity
-    for activity in activities_response:
-        print("HERE:---->")
-        print(activity)        
+    for activity in activities_response:       
         activity_type = activity.get('type')
         if activity_type in allowed_activity_types:  # Only include Hike, Run, Ride
             activity_data = {
