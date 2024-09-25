@@ -58,7 +58,9 @@ def club_members():
 
     # Fetch activities within the date range
     activities = client.get_activities(after=start_date, before=end_date)
-
+    print("HERE:---->")
+    print(activities)
+    
     for activity in activities:
         # Use get_activity to fetch additional details, including distance and time
         detailed_activity = client.get_activity(activity.id)
